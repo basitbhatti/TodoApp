@@ -1,7 +1,10 @@
 package com.simple.todo_app.ui.screens.AddTaskScreen
 
 import android.annotation.SuppressLint
+import android.app.DatePickerDialog
+import android.app.TimePickerDialog
 import android.widget.Toast
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -42,17 +45,18 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
 import com.simple.todo_app.R
 import com.simple.todo_app.db.Task
 import com.simple.todo_app.viewmodel.MainViewModel
+import java.util.Calendar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun AddTaskScreen(modifier: Modifier = Modifier) {
-
-    val viewModel: MainViewModel = viewModel<MainViewModel>()
+fun AddTaskScreen(
+    modifier: Modifier = Modifier, navController: NavHostController, viewModel: MainViewModel
+) {
 
     var title by remember {
         mutableStateOf("")
@@ -63,11 +67,11 @@ fun AddTaskScreen(modifier: Modifier = Modifier) {
     }
 
     var dueDate by remember {
-        mutableStateOf("")
+        mutableStateOf("Pick Date")
     }
 
     var dueTime by remember {
-        mutableStateOf("")
+        mutableStateOf("Pick Time")
     }
 
     var isCompleted by remember {
@@ -96,7 +100,10 @@ fun AddTaskScreen(modifier: Modifier = Modifier) {
                 }
 
             }, navigationIcon = {
-                IconButton(onClick = { /*TODO BACK BUTTON*/ }) {
+                IconButton(onClick = {
+                    navController.popBackStack()
+                    viewModel.setCurrentTask(null)
+                }) {
                     Icon(
                         imageVector = Icons.Default.ArrowBack,
                         contentDescription = "Back Button"
@@ -118,6 +125,7 @@ fun AddTaskScreen(modifier: Modifier = Modifier) {
                 } else {
                     val task = Task(0, title, description, dueDate, dueTime, false)
                     viewModel.insertTask(task)
+                    navController.popBackStack()
                 }
 
             }) {
@@ -175,8 +183,27 @@ fun AddTaskScreen(modifier: Modifier = Modifier) {
                         modifier = Modifier
                             .fillMaxWidth(.5f)
                             .fillMaxHeight()
-                            .padding(end = 10.dp),
-                        colors = CardDefaults.cardColors(
+                            .padding(end = 10.dp)
+                            .clickable {
+
+                                val c = Calendar.getInstance()
+
+                                val year = c.get(Calendar.YEAR)
+                                val month = c.get(Calendar.MONTH)
+                                val day = c.get(Calendar.DAY_OF_MONTH)
+                                val datePickerDialog = DatePickerDialog(
+                                    context,
+                                    DatePickerDialog.OnDateSetListener { view, year, monthOfYear, dayOfMonth ->
+                                        dueDate = "$dayOfMonth/$monthOfYear/$year"
+                                    },
+                                    year,
+                                    month,
+                                    day
+                                )
+
+                                datePickerDialog.show()
+
+                            }, colors = CardDefaults.cardColors(
                             containerColor = Color.LightGray
                         )
                     ) {
@@ -195,7 +222,7 @@ fun AddTaskScreen(modifier: Modifier = Modifier) {
 
                             Spacer(modifier = Modifier.width(10.dp))
 
-                            Text(text = "Pick Date")
+                            Text(text = dueDate)
 
                         }
 
@@ -205,8 +232,27 @@ fun AddTaskScreen(modifier: Modifier = Modifier) {
                         modifier = Modifier
                             .fillMaxWidth()
                             .fillMaxHeight()
-                            .padding(start = 10.dp),
-                        colors = CardDefaults.cardColors(
+                            .padding(start = 10.dp)
+                            .clickable {
+
+                                val c = Calendar.getInstance()
+
+                                val dialog = TimePickerDialog(
+                                    context,
+                                    TimePickerDialog.OnTimeSetListener { context, hour, minute ->
+                                        c.set(Calendar.HOUR_OF_DAY, hour)
+                                        c.set(Calendar.MINUTE, minute)
+
+                                        dueTime = "$hour:$minute"
+                                    },
+                                    c.get(Calendar.HOUR_OF_DAY),
+                                    c.get(Calendar.MINUTE),
+                                    true
+                                )
+
+                                dialog.show()
+
+                            }, colors = CardDefaults.cardColors(
                             containerColor = Color.LightGray
                         )
                     ) {
@@ -226,7 +272,7 @@ fun AddTaskScreen(modifier: Modifier = Modifier) {
 
                             Spacer(modifier = Modifier.width(10.dp))
 
-                            Text(text = "Pick Time")
+                            Text(text = dueTime)
 
 
                         }
@@ -248,5 +294,4 @@ fun AddTaskScreen(modifier: Modifier = Modifier) {
 @Preview
 @Composable
 private fun TaskPrev() {
-    AddTaskScreen()
 }

@@ -16,13 +16,18 @@ class MainViewModel(val repository: TaskRepository) : ViewModel() {
     val currentTask: LiveData<Task?>
         get() = _currentTask
 
-    fun setCurrentTask(task: Task) {
+    fun setCurrentTask(task: Task?) {
         _currentTask.value = task
     }
 
     fun insertTask(task: Task) {
         viewModelScope.launch {
             repository.addTask(task)
+        }
+    }
+    fun updateTask(task: Task) {
+        viewModelScope.launch {
+            repository.updateTask(task)
         }
     }
 

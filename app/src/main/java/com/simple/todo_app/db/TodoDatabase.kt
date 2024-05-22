@@ -10,7 +10,6 @@ abstract class TodoDatabase() : RoomDatabase() {
 
     abstract fun getDao(): Dao
 
-
     companion object {
         var INSTANCE: TodoDatabase? = null
 

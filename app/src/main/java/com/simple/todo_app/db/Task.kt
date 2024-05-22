@@ -12,5 +12,5 @@ data class Task(
     val description : String,
     val dueDate : String,
     val dueTime : String,
-    val isCompleted : Boolean
+    var isCompleted : Boolean
 )
